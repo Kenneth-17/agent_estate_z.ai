@@ -50,3 +50,17 @@
 - Test result: 6/6 passed
 - Issues encountered: AsyncMock context manager setup required explicit `__aenter__.return_value`
 - Next: Tool 2 (`get_transport_options`)
+
+### Tool 2: get_transport_options
+- Status: Complete
+- API used: TfL API (London postcodes), TransportAPI (all other UK postcodes)
+- Changes:
+  - Created `tools/transport.py` — routes London postcodes to TfL, others to TransportAPI
+  - London postcode detection via prefix check (E, N, S, W, SE, SW, NW, WC, EC)
+  - TfL returns journey duration + transport modes from journey legs
+  - TransportAPI returns duration + modes from route parts
+  - TransportAPI credentials loaded from env vars (TRANSPORT_API_ID, TRANSPORT_API_KEY)
+  - Created `tests/test_transport.py` — 6 tests: TfL routing, SE postcode, TransportAPI routing, timeout, API error, empty journeys
+- Test result: 6/6 passed (full suite 12/12)
+- Issues encountered: None
+- Next: Tool 3 (`get_nearby_universities`)
