@@ -75,3 +75,16 @@
 - Test result: 10/10 passed (full suite 22/22)
 - Issues encountered: None
 - Next: Tool 4 (`get_nearby_amenities`)
+
+### Tool 4: get_nearby_amenities
+- Status: Complete
+- API used: Google Places API (New) — Nearby Search (POST)
+- Changes:
+  - Created `tools/amenities.py` — searches 4 categories (supermarket, gym, restaurant, park) within 1.5km radius
+  - Supermarkets and gyms returned as name lists (capped at 5)
+  - Restaurants and parks returned as counts
+  - Requires GOOGLE_PLACES_API_KEY env var
+  - Created `tests/test_amenities.py` — 8 tests: all categories, 5-result cap (supermarkets, gyms), count types, timeout, API error, missing key, empty results
+- Test result: 8/8 passed (full suite 30/30)
+- Issues encountered: Test mock needed `client.post` since Google Places API (New) uses POST requests
+- Next: Tool 5 (`get_area_stats`)
