@@ -51,22 +51,37 @@ def _parse_transport_api_response(data: dict) -> dict:
     }
 
 
-async def get_transport_options(postcode: str, destination_postcode: str) -> dict:
+async def _fetch_journey(client: httpx.AsyncClient, postcode: str, dest: str) -> dict:
+    if _is_london_postcode(postcode):
+        url = f"{TFL_BASE}/{postcode}/to/{dest}"
+        response = await client.get(url)
+        response.raise_for_status()
+        return _parse_tfl_response(response.json())
+    else:
+        app_id, app_key = _get_transport_api_key()
+        url = f"{TRANSPORT_API_BASE}/from/postcode:{postcode}/to/postcode:{dest}.json"
+        response = await client.get(
+            url, params={"app_id": app_id, "app_key": app_key}
+        )
+        response.raise_for_status()
+        return _parse_transport_api_response(response.json())
+
+
+async def get_transport_options(
+    postcode: str, destination_postcode: str, work_postcode: str | None = None
+) -> dict:
     try:
         async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT) as client:
-            if _is_london_postcode(postcode):
-                url = f"{TFL_BASE}/{postcode}/to/{destination_postcode}"
-                response = await client.get(url)
-                response.raise_for_status()
-                return _parse_tfl_response(response.json())
-            else:
-                app_id, app_key = _get_transport_api_key()
-                url = f"{TRANSPORT_API_BASE}/from/postcode:{postcode}/to/postcode:{destination_postcode}.json"
-                response = await client.get(
-                    url, params={"app_id": app_id, "app_key": app_key}
-                )
-                response.raise_for_status()
-                return _parse_transport_api_response(response.json())
+            university_journey = await _fetch_journey(client, postcode, destination_postcode)
+
+            if work_postcode is None:
+                return university_journey
+
+            work_journey = await _fetch_journey(client, postcode, work_postcode)
+            return {
+                "university_journey": university_journey,
+                "work_journey": work_journey,
+            }
     except httpx.TimeoutException:
         print("Transport request timed out", file=sys.stderr)
         return {"error": "timeout", "data": []}

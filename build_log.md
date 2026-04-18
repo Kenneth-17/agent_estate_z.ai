@@ -100,3 +100,30 @@
 - Test result: 8/8 passed (full suite 38/38)
 - Issues encountered: None
 - Next: All 5 tools complete. Build server.py to wire up MCP endpoints.
+
+## User Profile Update — 2026-04-18
+
+### get_transport_options: work_postcode parameter added
+- Status: Complete
+- Changes:
+  - Added optional `work_postcode: str = None` parameter
+  - Without work_postcode: returns original flat `{ journey_time_mins, modes, provider }` (backward compatible)
+  - With work_postcode: returns `{ university_journey: {...}, work_journey: {...} }`
+  - Extracted `_fetch_journey()` helper to avoid duplication
+  - Added 3 new tests: backward compat, both journeys, different durations
+- Test result: 9/9 passed (was 6/6)
+- Issues encountered: Mixed-provider test needed realistic scenario — routing is origin-based
+- Next: Update get_nearby_amenities
+
+### get_nearby_amenities: has_children parameter added
+- Status: Complete
+- Changes:
+  - Added optional `has_children: bool = False` parameter
+  - Without has_children: returns original structure (backward compatible)
+  - With has_children=True: adds `schools` list (capped at 5) and `child_friendly_score` (0-10)
+  - Score formula: min(parks_count, 5) + min(schools_count, 5), capped at 10
+  - Schools fetched via Google Places `primary_school` type
+  - Added 5 new tests: backward compat, schools+score, high score, zero score, cap at 5
+- Test result: 13/13 passed (was 8/8)
+- Issues encountered: None
+- Next: Full suite 46/46 green. Push and commit.

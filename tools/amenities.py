@@ -14,6 +14,8 @@ CATEGORIES = {
     "parks": "park",
 }
 
+CHILD_CATEGORY = "primary_school"
+
 
 def _get_api_key() -> str:
     return os.environ.get("GOOGLE_PLACES_API_KEY", "")
@@ -43,7 +45,14 @@ async def _search_category(client: httpx.AsyncClient, api_key: str, lat: float, 
     return response.json().get("places", [])
 
 
-async def get_nearby_amenities(lat: float, lng: float) -> dict:
+def _calc_child_friendly_score(parks: list, schools: list) -> int:
+    score = min(len(parks), 5) + min(len(schools), 5)
+    return min(score, 10)
+
+
+async def get_nearby_amenities(
+    lat: float, lng: float, has_children: bool = False
+) -> dict:
     api_key = _get_api_key()
     if not api_key:
         return {"error": "missing_api_key", "data": []}
@@ -54,6 +63,10 @@ async def get_nearby_amenities(lat: float, lng: float) -> dict:
             gyms = await _search_category(client, api_key, lat, lng, "gym")
             restaurants = await _search_category(client, api_key, lat, lng, "restaurant")
             parks = await _search_category(client, api_key, lat, lng, "park")
+
+            schools = []
+            if has_children:
+                schools = await _search_category(client, api_key, lat, lng, CHILD_CATEGORY)
     except httpx.TimeoutException:
         print("Amenities request timed out", file=sys.stderr)
         return {"error": "timeout", "data": []}
@@ -62,9 +75,15 @@ async def get_nearby_amenities(lat: float, lng: float) -> dict:
         print(f"Amenities API error: {exc}", file=sys.stderr)
         return {"error": "api_error", "status": status, "data": []}
 
-    return {
+    result = {
         "supermarkets": [p["displayName"]["text"] for p in supermarkets[:MAX_RESULTS]],
         "gyms": [p["displayName"]["text"] for p in gyms[:MAX_RESULTS]],
         "restaurants": len(restaurants),
         "parks": len(parks),
     }
+
+    if has_children:
+        result["schools"] = [p["displayName"]["text"] for p in schools[:MAX_RESULTS]]
+        result["child_friendly_score"] = _calc_child_friendly_score(parks, schools)
+
+    return result

@@ -148,3 +148,76 @@ async def test_tfl_empty_journeys():
     assert result["provider"] == "TfL"
     assert result["journey_time_mins"] == 0
     assert result["modes"] == []
+
+
+# --- NEW: work_postcode parameter ---
+
+
+@pytest.mark.asyncio
+async def test_without_work_postcode_returns_single_journey():
+    """Without work_postcode, returns the original flat structure (backward compatible)."""
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json.return_value = {
+        "journeys": [{"duration": 30, "legs": [{"mode": {"name": "tube"}}]}]
+    }
+
+    client = _make_client(get_return=mock_response)
+    with patch("tools.transport.httpx.AsyncClient", return_value=client):
+        result = await get_transport_options("E1 6RF", "WC1E 7HX")
+
+    assert "provider" in result
+    assert "journey_time_mins" in result
+    assert "university_journey" not in result
+    assert "work_journey" not in result
+
+
+@pytest.mark.asyncio
+async def test_with_work_postcode_returns_both_journeys():
+    """With work_postcode, returns university_journey and work_journey."""
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+    mock_response.raise_for_status = MagicMock()
+    mock_response.json.return_value = {
+        "journeys": [{"duration": 30, "legs": [{"mode": {"name": "tube"}}]}]
+    }
+
+    client = _make_client(get_return=mock_response)
+    with patch("tools.transport.httpx.AsyncClient", return_value=client):
+        result = await get_transport_options("E1 6RF", "WC1E 7HX", work_postcode="E14 4AB")
+
+    assert "university_journey" in result
+    assert "work_journey" in result
+    assert result["university_journey"]["journey_time_mins"] == 30
+    assert result["work_journey"]["journey_time_mins"] == 30
+    assert result["university_journey"]["provider"] == "TfL"
+    assert result["work_journey"]["provider"] == "TfL"
+
+
+@pytest.mark.asyncio
+async def test_with_work_postcode_different_durations():
+    """With work_postcode, uni and work journeys return independent durations."""
+    uni_resp = MagicMock()
+    uni_resp.status_code = 200
+    uni_resp.raise_for_status = MagicMock()
+    uni_resp.json.return_value = {
+        "routes": [{"duration_minutes": 20, "route_parts": [{"mode": "bus"}]}]
+    }
+
+    work_resp = MagicMock()
+    work_resp.status_code = 200
+    work_resp.raise_for_status = MagicMock()
+    work_resp.json.return_value = {
+        "routes": [{"duration_minutes": 45, "route_parts": [{"mode": "train"}]}]
+    }
+
+    client = _make_client(get_side_effect=[uni_resp, work_resp])
+    with patch("tools.transport.httpx.AsyncClient", return_value=client):
+        with patch("tools.transport._get_transport_api_key", return_value=("id", "key")):
+            result = await get_transport_options("M1 1AE", "M14 5RQ", work_postcode="M2 2AE")
+
+    assert result["university_journey"]["provider"] == "TransportAPI"
+    assert result["university_journey"]["journey_time_mins"] == 20
+    assert result["work_journey"]["provider"] == "TransportAPI"
+    assert result["work_journey"]["journey_time_mins"] == 45
