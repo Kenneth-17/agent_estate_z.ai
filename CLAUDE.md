@@ -6,11 +6,10 @@ A Python MCP server that enriches UK rental property listings with contextual da
 ## Required Skills
 Before writing any code, load and follow these skills from `.claude/skills/`:
 
-- **`mcp-builder`** — read this FIRST before touching server.py or any tool file. Follow its patterns exactly for MCP server structure, tool registration, and stdio transport.
-- **`varlock-claude-skill`** — read this before handling any environment variables. All secret loading must follow its patterns.
-- **`executing-plans`** — read this before starting each new tool. Follow its step-by-step execution pattern — one tool at a time, verify before proceeding.
-- **`modern-python`** — read this before setting up the project. Use uv, ruff, and pytest as specified.
-- **`test-driven-development`** — read this before writing any tool implementation. Write the test first, then the implementation.
+- **`varlock_claude_skill`** — read this before handling any environment variables. All secret loading must follow its patterns.
+- **`executing_plans`** — read this before starting each new tool. Follow its step-by-step execution pattern — one tool at a time, verify before proceeding.
+- **`test_driven_development`** — read this before writing any tool implementation. Write the test first, then the implementation.
+- **`dispatching_parallel_agents`** — read this when parallelising independent tasks or tool builds.
 
 If a skill file is missing, stop and ask the user to install it before proceeding.
 

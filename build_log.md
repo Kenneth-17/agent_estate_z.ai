@@ -29,3 +29,12 @@
   - Added `varlock_claude_skill.md`
 - Issues encountered: None
 - Next: Begin tool 1 (`get_crime_data`)
+
+### CLAUDE.md Skills Section Updated
+- Status: Complete
+- Changes:
+  - Removed `mcp-builder` and `modern-python` (not present in .claude/skills/)
+  - Updated skill names to match actual filenames (underscores instead of hyphens)
+  - Added `dispatching_parallel_agents` skill
+- Issues encountered: None
+- Next: Begin tool 1 (`get_crime_data`)
