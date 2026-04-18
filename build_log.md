@@ -88,3 +88,15 @@
 - Test result: 8/8 passed (full suite 30/30)
 - Issues encountered: Test mock needed `client.post` since Google Places API (New) uses POST requests
 - Next: Tool 5 (`get_area_stats`)
+
+### Tool 5: get_area_stats
+- Status: Complete
+- API used: Static JSON (data/ons_rental_stats.json)
+- Changes:
+  - Created `tools/area_stats.py` — extracts outward code from postcode, longest-prefix match against ONS data
+  - Created `data/ons_rental_stats.json` — seeded with 50 UK postcode areas with realistic avg rent and demand
+  - Demo postcodes: M14 5RQ -> 950/Medium, E1 6RF -> 1800/Very High
+  - Created `tests/test_area_stats.py` — 8 tests: Manchester, London E, SE, Edinburgh EH, output structure, unknown postcode, missing file, case insensitivity
+- Test result: 8/8 passed (full suite 38/38)
+- Issues encountered: None
+- Next: All 5 tools complete. Build server.py to wire up MCP endpoints.
