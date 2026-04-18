@@ -64,3 +64,14 @@
 - Test result: 6/6 passed (full suite 12/12)
 - Issues encountered: None
 - Next: Tool 3 (`get_nearby_universities`)
+
+### Tool 3: get_nearby_universities
+- Status: Complete
+- API used: Static JSON (data/universities.json)
+- Changes:
+  - Created `tools/universities.py` — Haversine distance calc, filters by radius_km, sorted by distance
+  - Created `data/universities.json` — seeded with 50 UK universities (name, lat, lng, postcode)
+  - Created `tests/test_universities.py` — 10 tests: haversine (zero, known distance, London-Manchester), nearby search, custom radius, large radius, output structure, sorted order, no results, missing file
+- Test result: 10/10 passed (full suite 22/22)
+- Issues encountered: None
+- Next: Tool 4 (`get_nearby_amenities`)
