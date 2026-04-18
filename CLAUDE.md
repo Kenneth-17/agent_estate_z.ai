@@ -32,21 +32,14 @@ TRANSPORT_API_KEY=
 ## MCP Tools to Build
 Build these tools in this exact order. Do not skip ahead.
 
-### 1. `search_rental_listings`
-- Source: Nestoria API (no key required)
-- Input: `postcode: str`, `bedrooms: int`, `max_rent: int`
-- Output: list of listings with title, price, bedrooms, lat, lng, listing_url
-- Endpoint: `https://api.nestoria.co.uk/api?action=search_listings&country=uk&listing_type=rent`
-- Attribution: must include Nestoria as source in response
-
-### 2. `get_crime_data`
+### 1. `get_crime_data`
 - Source: data.police.uk (no key required)
 - Input: `lat: float`, `lng: float`
 - Output: `{ total_crimes: int, categories: dict, safety_rating: str }`
 - Endpoint: `https://data.police.uk/api/crimes-street/all-crime?lat={lat}&lng={lng}`
 - Aggregate last 3 months. Derive safety_rating: <50=Low, 50-100=Medium, >100=High
 
-### 3. `get_transport_options`
+### 2. `get_transport_options`
 - Source: TfL API (London postcodes: E, N, S, W, SE, SW, NW, WC, EC prefix) OR TransportAPI (all other UK postcodes)
 - Input: `postcode: str`, `destination_postcode: str`
 - Output: `{ journey_time_mins: int, modes: list, provider: str }`
@@ -54,21 +47,21 @@ Build these tools in this exact order. Do not skip ahead.
 - TfL endpoint: `https://api.tfl.gov.uk/Journey/JourneyResults/{from}/to/{to}`
 - TransportAPI endpoint: `https://transportapi.com/v3/uk/public/journey/from/postcode:{from}/to/postcode:{to}.json`
 
-### 4. `get_nearby_universities`
+### 3. `get_nearby_universities`
 - Source: static JSON file `data/universities.json`
 - Input: `lat: float`, `lng: float`, `radius_km: float = 10`
 - Output: list of `{ name, distance_km, postcode }`
 - Use Haversine formula for distance calculation
 - Seed file with top 50 UK universities with coordinates
 
-### 5. `get_nearby_amenities`
+### 4. `get_nearby_amenities`
 - Source: Google Places API (New)
 - Input: `lat: float`, `lng: float`
 - Output: `{ supermarkets: list, gyms: list, restaurants: int, parks: int }`
 - Use Places Nearby Search endpoint
 - Limit to 5 results per category
 
-### 6. `get_area_stats`
+### 5. `get_area_stats`
 - Source: ONS (static data snapshot)
 - Input: `postcode: str`
 - Output: `{ avg_rent_region: int, rental_demand: str }`
@@ -91,7 +84,6 @@ property-search-mcp/
 ├── requirements.txt
 ├── server.py             # MCP server entry point
 ├── tools/
-│   ├── listings.py       # search_rental_listings
 │   ├── crime.py          # get_crime_data
 │   ├── transport.py      # get_transport_options
 │   ├── universities.py   # get_nearby_universities
@@ -139,3 +131,6 @@ After completing each tool, append to build_log.md:
 Primary demo: `M14 5RQ` (Manchester, near University of Manchester)
 Secondary demo: `E1 6RF` (London, near Queen Mary University)
 All dummy data in ONS stats must be realistic for these postcodes.
+
+## Pending Tools
+- **search_rental_listings** — to be added later. Must follow output contract: `{ title, price, bedrooms, lat, lng, listing_url }` using Nestoria API. See original CLAUDE.md for full spec.
