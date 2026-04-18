@@ -38,3 +38,15 @@
   - Added `dispatching_parallel_agents` skill
 - Issues encountered: None
 - Next: Begin tool 1 (`get_crime_data`)
+
+### Project Skeleton & Tool 1: get_crime_data
+- Status: Complete
+- API used: data.police.uk
+- Changes:
+  - Created project skeleton: requirements.txt, .gitignore, tools/__init__.py, tests/ dir
+  - Set up Python venv with all dependencies
+  - Created `tools/crime.py` — fetches last 3 months of crime data, aggregates by category, derives safety rating
+  - Created `tests/test_crime.py` — 6 tests covering: output structure, Low/Medium/High ratings, timeout error, API error
+- Test result: 6/6 passed
+- Issues encountered: AsyncMock context manager setup required explicit `__aenter__.return_value`
+- Next: Tool 2 (`get_transport_options`)
