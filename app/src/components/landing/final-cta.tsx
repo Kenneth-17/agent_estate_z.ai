@@ -15,7 +15,7 @@ export default function FinalCta() {
         </h2>
         <p>
           Build your Rental Passport in two minutes. No filters. No endless
-          scrolling. Just a conversation &mdash; and a shortlist that makes
+          scrolling. Just a conversation and a shortlist that makes
           sense.
         </p>
         <Link href="/login?new=1" className="final-cta-button">

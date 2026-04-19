@@ -11,7 +11,7 @@ export default function HowItWorks() {
           </h2>
           <p className="section-sub">
             No filters. No decision fatigue. Just a two-minute conversation that
-            teaches our agent how you live &mdash; then a ranked shortlist that
+            teaches our agent how you live, then a ranked shortlist that
             reasons back.
           </p>
         </div>
@@ -28,7 +28,7 @@ export default function HowItWorks() {
                   Where do you commute most days?
                 </div>
                 <div className="illu-bubble me">
-                  Canary Wharf &mdash; 4 days a week
+                  Canary Wharf, 4 days a week
                 </div>
                 <div className="illu-bubble them">
                   What matters most in a neighbourhood?
@@ -80,7 +80,7 @@ export default function HowItWorks() {
             <div className="howto-body">
               <div className="howto-title">We build your Passport</div>
               <div className="howto-text">
-                Your constraints become a living profile &mdash; budget, commute,
+                Your constraints become a living profile: budget, commute,
                 priorities, household needs. Machine-readable, private, and
                 portable between agents.
               </div>
@@ -131,7 +131,7 @@ export default function HowItWorks() {
               <div className="howto-text">
                 Our agent queries six live data sources, scores every listing
                 against your unique constraints, and tells you exactly why each
-                one fits &mdash; or doesn&apos;t.
+                one fits or doesn&apos;t.
               </div>
             </div>
           </div>

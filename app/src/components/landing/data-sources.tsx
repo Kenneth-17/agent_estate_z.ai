@@ -10,8 +10,8 @@ export default function DataSources() {
             Powered by real-time <em>London data</em>.
           </h2>
           <p className="section-sub">
-            We pull from six authoritative public sources the moment you ask
-            &mdash; not a stale CSV from last quarter. Your Passport is always
+            We pull from six authoritative public sources the moment you ask,
+            not a stale CSV from last quarter. Your Passport is always
             scored against the London that exists right now.
           </p>
         </div>

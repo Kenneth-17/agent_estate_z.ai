@@ -10,7 +10,7 @@ export default function ProductPreview() {
             See it <em>in action</em>.
           </h2>
           <p className="section-sub">
-            This is what our agent hands back &mdash; three listings, scored
+            This is what our agent hands back: three listings, scored
             against a real Passport. Click any score to see the reasoning trail.
           </p>
         </div>

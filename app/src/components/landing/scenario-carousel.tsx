@@ -138,7 +138,7 @@ export default function ScenarioCarousel() {
                 What&apos;s your budget?
               </div>
               <div className="scn-bubble me">
-                &pound;1,800. I need a gym within 10 min &mdash; non-negotiable.
+                &pound;1,800. I need a gym within 10 min, non-negotiable.
                 She&apos;s pregnant, need a GP accepting new patients.
               </div>
               <div className="scn-bubble them building">
@@ -239,14 +239,14 @@ export default function ScenarioCarousel() {
                   <span className="c">&#10003;</span> 24 min commute to Canary Wharf
                 </li>
                 <li>
-                  <span className="c">&#10003;</span> N15 night bus to UCLH &mdash; 8
+                  <span className="c">&#10003;</span> N15 night bus to UCLH, 8
                   min walk
                 </li>
                 <li>
-                  <span className="c">&#10003;</span> PureGym &mdash; 6 min
+                  <span className="c">&#10003;</span> PureGym, 6 min
                 </li>
                 <li>
-                  <span className="c">&#10003;</span> GP accepting patients &mdash; 4
+                  <span className="c">&#10003;</span> GP accepting patients, 4
                   min
                 </li>
                 <li>
@@ -311,7 +311,7 @@ export default function ScenarioCarousel() {
                 24hr transport <em>and</em> great primary schools. What else?
               </div>
               <div className="scn-bubble me">
-                Knee injury &mdash; max 2 flights of stairs. Mum visits weekends,
+                Knee injury, max 2 flights of stairs. Mum visits weekends,
                 needs parking. Budget &pound;1,400.
               </div>
               <div className="scn-bubble them building">
@@ -416,11 +416,11 @@ export default function ScenarioCarousel() {
                   walk &middot; every 12 min at 3am
                 </li>
                 <li>
-                  <span className="c">&#10003;</span> Outstanding primary school
-                  &mdash; 3 min
+                  <span className="c">&#10003;</span> Outstanding primary school,
+                  3 min
                 </li>
                 <li>
-                  <span className="c">&#10003;</span> Ground floor &mdash; no stairs
+                  <span className="c">&#10003;</span> Ground floor, no stairs
                 </li>
                 <li>
                   <span className="c">&#10003;</span> Parking available
@@ -483,7 +483,7 @@ export default function ScenarioCarousel() {
               </div>
               <div className="scn-bubble me">
                 PhD at King&apos;s. Supervisor at Denmark Hill, lab at Waterloo,
-                tutorials at Strand &mdash; three locations.
+                tutorials at Strand, three locations.
               </div>
               <div className="scn-bubble them">
                 Three campuses! I&apos;ll check transport to all three from every
@@ -491,7 +491,7 @@ export default function ScenarioCarousel() {
               </div>
               <div className="scn-bubble me">
                 &pound;950 max stipend. Need a pharmacy within 5 min, daily meds.
-                Sensory issues &mdash; quiet street, not above a pub.
+                Sensory issues, quiet street, not above a pub.
               </div>
               <div className="scn-bubble them building">
                 <span className="scn-build-spin"></span>
@@ -592,7 +592,7 @@ export default function ScenarioCarousel() {
                   Strand &middot; 22 min Denmark Hill
                 </li>
                 <li>
-                  <span className="c">&#10003;</span> Boots pharmacy &mdash; 3 min
+                  <span className="c">&#10003;</span> Boots pharmacy, 3 min
                 </li>
                 <li>
                   <span className="c">&#10003;</span> Quiet residential street

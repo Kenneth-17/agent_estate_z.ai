@@ -13,7 +13,7 @@ export default function ProblemSection() {
           <p className="section-sub">
             You open fifteen browser tabs, cross-reference four websites, and
             still don&apos;t know whether the flat is actually right for your
-            life. We think that&apos;s a bug &mdash; not a feature.
+            life. We think that&apos;s a bug, not a feature.
           </p>
         </div>
 
@@ -106,7 +106,7 @@ export default function ProblemSection() {
               </div>
             </div>
             <div className="problem-today-footer">
-              15 &mdash; 20 services &middot; Zero connection between them
+              15 to 20 services &middot; Zero connection between them
             </div>
           </div>
 

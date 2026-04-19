@@ -182,8 +182,8 @@ export default function Hero() {
           </h1>
           <p className="hero-sub">
             Rental platforms give you six filters for a problem with infinite
-            dimensions. We give you an AI agent that understands your life &mdash;
-            then scores every London listing against it.
+            dimensions. We give you an AI agent that understands your life and
+            scores every London listing against it.
           </p>
 
           <div className="hero-ctas">
