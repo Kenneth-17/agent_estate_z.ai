@@ -106,3 +106,61 @@ export async function createPassport(data: {
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
+
+// ─── Supabase persistence ─────────────────────────────────────────
+import { createBrowserClient } from "@supabase/ssr";
+
+function getSupabaseClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
+export async function savePassportToSupabase(data: {
+  user_id: string;
+  session_id: string;
+  name: string;
+  email: string;
+  phone: string;
+  dob: string;
+  sex: string;
+  persona: string;
+  budget_max: number;
+  bedrooms_min: number;
+  commute_destination: string;
+  priorities: string[];
+  priority_weights: Record<string, string>;
+}) {
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.from("passports").upsert(data, { onConflict: "session_id" });
+  if (error) throw error;
+}
+
+export async function saveResultsToSupabase(sessionId: string, results: Property[]) {
+  const rows = results.map(p => ({
+    session_id: sessionId,
+    listing_id: p.listing_id,
+    overall_score: p.overall_score ?? null,
+    scores: p.scores ?? {},
+    enrichment: p.enrichment ?? {},
+  }));
+  if (rows.length === 0) return;
+  const supabase = getSupabaseClient();
+  const { error } = await supabase.from("property_results").insert(rows);
+  if (error) throw error;
+}
+
+export async function getPassportFromSupabase(sessionId: string) {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase.from("passports").select("*").eq("session_id", sessionId).single();
+  if (error) throw error;
+  return data;
+}
+
+export async function getResultsFromSupabase(sessionId: string) {
+  const supabase = getSupabaseClient();
+  const { data, error } = await supabase.from("property_results").select("*").eq("session_id", sessionId);
+  if (error) throw error;
+  return data;
+}
