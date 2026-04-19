@@ -96,6 +96,7 @@ export async function createPassport(data: {
   bedrooms_min: number;
   commute_destination: string;
   priorities: string[];
+  priority_weights?: Record<string, string>;
 }): Promise<PassportCreateResponse> {
   const res = await fetch(`${API_BASE}/api/passport/create`, {
     method: "POST",

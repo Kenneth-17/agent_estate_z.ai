@@ -246,24 +246,114 @@ function CommuteStep({ commute, onPick }: { commute: string | null; onPick: (v: 
   );
 }
 
-function PrioritiesStep({ personaObj, priorities, toggle }: { personaObj: typeof PERSONAS[0] | undefined; priorities: string[]; toggle: (p: string) => void }) {
+function PrioritiesStep({ personaObj, priorities, toggle, onAddCustom }: { personaObj: typeof PERSONAS[0] | undefined; priorities: string[]; toggle: (p: string) => void; onAddCustom: (v: string) => void }) {
+  const [custom, setCustom] = useState("");
   const opts = personaObj ? PRIORITIES[personaObj.id] : PRIORITIES.professional;
+  const presetSelected = priorities.filter(p => opts.includes(p)).length;
+  const customSelected = priorities.filter(p => !opts.includes(p)).length;
+  const maxPreset = 3;
+  const maxCustom = 3;
   return (
     <div className="pp-chat">
       <AIBubble>
         <p className="pp-q">Last one. What <em>matters most</em> in your next place?</p>
-        <div className="pp-sub">Pick up to 3. These become your priority weights — we'll score every property against them.</div>
+        <div className="pp-sub">Pick from the suggestions, or type your own below. Up to 6 total.</div>
       </AIBubble>
       {priorities.length > 0 && <UserBubble>{priorities.join(" · ")}</UserBubble>}
       <div className="pp-answer-area">
         <div className="pp-chips">
           {opts.map(p => {
             const selected = priorities.includes(p);
-            const disabled = !selected && priorities.length >= 3;
+            const disabled = !selected && presetSelected >= maxPreset;
             return <button key={p} className={"pp-chip" + (selected ? " selected" : "")} onClick={() => toggle(p)} disabled={disabled} style={disabled ? { opacity: 0.4, cursor: "not-allowed" } : {}}>{p} {selected && <span className="pp-x"><XIcon /></span>}</button>;
           })}
         </div>
-        <div className="pp-helper-row"><span>{priorities.length}/3 selected</span><span>·</span><span>Priorities just change the ranking — we'll still show everything.</span></div>
+        <div className="pp-text-input-wrap" style={{ marginTop: 12 }}>
+          <input className="pp-text-input" placeholder="Or type what matters to you…" value={custom} onChange={e => setCustom(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && custom.trim() && customSelected < maxCustom) { onAddCustom(custom.trim()); setCustom(""); } }} />
+          <button className="pp-input-submit" disabled={!custom.trim() || customSelected >= maxCustom} onClick={() => { if (custom.trim() && customSelected < maxCustom) { onAddCustom(custom.trim()); setCustom(""); } }}>Add</button>
+        </div>
+        {customSelected > 0 && (
+          <div className="pp-chips" style={{ marginTop: 8 }}>
+            {priorities.filter(p => !opts.includes(p)).map(p => (
+              <button key={p} className="pp-chip selected pp-chip-custom" onClick={() => toggle(p)}>{p} <span className="pp-x"><XIcon /></span></button>
+            ))}
+          </div>
+        )}
+        <div className="pp-helper-row"><span>{priorities.length} selected</span><span>·</span><span>Priorities just change the ranking — we'll still show everything.</span></div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Review Step ──────────────────────────────────────────────────
+function ReviewStep({ details, personaObj, budget, bedrooms, commute, priorities }: { details: Record<string, string>; personaObj: typeof PERSONAS[0] | undefined; budget: string | null; bedrooms: string | null; commute: string | null; priorities: string[] }) {
+  const rows: [string, string][] = [
+    ["Persona", personaObj?.short || "—"],
+    ["Budget", budget ? budget + "/mo" : "—"],
+    ["Bedrooms", bedrooms || "—"],
+    ["Commute", commute || "—"],
+  ];
+  return (
+    <div className="pp-chat">
+      <AIBubble>
+        <p className="pp-q">Here&apos;s everything you&apos;ve told us.</p>
+        <div className="pp-sub">Take a quick look — you can always go back and change things later.</div>
+      </AIBubble>
+      <div className="pp-answer-area" style={{ marginLeft: 0 }}>
+        <div style={{ background: "var(--pp-surface)", border: "1px solid var(--pp-line)", borderRadius: "var(--pp-radius)", overflow: "hidden", maxWidth: 560 }}>
+          {rows.map(([k, v], i) => (
+            <div key={k} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: i < rows.length - 1 ? "1px solid var(--pp-line-2)" : "none" }}>
+              <span style={{ fontFamily: "var(--pp-mono)", fontSize: 11, color: "var(--pp-ink-4)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{k}</span>
+              <span style={{ fontWeight: 500 }}>{v}</span>
+            </div>
+          ))}
+          <div style={{ padding: "14px 18px", background: "var(--pp-surface-2)", borderTop: "1px dashed var(--pp-line)" }}>
+            <div style={{ fontFamily: "var(--pp-mono)", fontSize: 11, color: "var(--pp-ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Priorities</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {priorities.map(p => <span key={p} style={{ padding: "5px 12px", background: "var(--pp-surface)", border: "1px solid var(--pp-line)", borderRadius: 999, fontSize: 13, fontWeight: 500 }}>{p}</span>)}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Weightage Step ───────────────────────────────────────────────
+const WEIGHT_LEVELS = ["Critical", "Important", "Nice to have"] as const;
+type WeightLevel = typeof WEIGHT_LEVELS[number];
+const WEIGHT_WIDTHS: Record<string, string> = { Critical: "100%", Important: "65%", "Nice to have": "35%" };
+const WEIGHT_COLORS: Record<string, string> = { Critical: "var(--pp-ink)", Important: "var(--pp-ink-3)", "Nice to have": "var(--pp-ink-4)" };
+
+function WeightageStep({ priorities, weights, setWeight }: { priorities: string[]; weights: Record<string, string>; setWeight: (p: string, w: string) => void }) {
+  return (
+    <div className="pp-chat">
+      <AIBubble>
+        <p className="pp-q">How much does each one <em>matter</em>?</p>
+        <div className="pp-sub">Set the importance of each priority. This shapes how we score properties for you.</div>
+      </AIBubble>
+      <div className="pp-answer-area" style={{ marginLeft: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14, maxWidth: 560 }}>
+          {priorities.map((p, i) => {
+            const currentWeight = weights[p] || (i === 0 ? "Critical" : i === 1 ? "Important" : "Nice to have");
+            return (
+              <div key={p} className="pp-weight-row">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <span style={{ fontWeight: 500, fontSize: 14 }}>{p}</span>
+                  <span style={{ fontFamily: "var(--pp-mono)", fontSize: 10, color: WEIGHT_COLORS[currentWeight], letterSpacing: "0.06em", textTransform: "uppercase" }}>{currentWeight}</span>
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {WEIGHT_LEVELS.map(w => (
+                    <button key={w} className={"pp-chip" + (currentWeight === w ? " selected" : "")} style={{ flex: 1, justifyContent: "center", fontSize: 12 }} onClick={() => setWeight(p, w)}>{w}</button>
+                  ))}
+                </div>
+                <div className="pp-priority-bar" style={{ marginTop: 6 }}>
+                  <div className="pp-priority-fill" style={{ width: WEIGHT_WIDTHS[currentWeight], background: WEIGHT_COLORS[currentWeight] }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -386,36 +476,162 @@ function LoadingView({ details, personaObj, budget, bedrooms, onSkip }: { detail
   );
 }
 
-// ─── Reveal View ─────────────────────────────────────────────────
-function RevealView({ details, personaObj, budget, bedrooms, commute, priorities }: { details: Record<string, string>; personaObj: typeof PERSONAS[0] | undefined; budget: string | null; bedrooms: string | null; commute: string | null; priorities: string[] }) {
+// ─── Entry (passport book field) ──────────────────────────────────
+function PpEntry({ k, v, mono }: { k: string; v: string; mono?: boolean }) {
+  return (
+    <div className="pp-entry">
+      <div className="pp-entry-k">{k}</div>
+      <div className={"pp-entry-v" + (mono ? " mono" : "")}>{v}</div>
+    </div>
+  );
+}
+
+// ─── Reveal View (Passport Book) ─────────────────────────────────
+function RevealView({ details, personaObj, budget, bedrooms, commute, priorities, priorityWeights, onFindHome, submitting, onRestart }: { details: Record<string, string>; personaObj: typeof PERSONAS[0] | undefined; budget: string | null; bedrooms: string | null; commute: string | null; priorities: string[]; priorityWeights: Record<string, string>; onFindHome: () => void; submitting: boolean; onRestart: () => void }) {
   const holder = details?.name?.trim() || "UNSIGNED";
+  const surname = holder.split(" ").slice(-1)[0] || "UNSIGNED";
+  const given = holder.split(" ").slice(0, -1).join(" ") || holder;
+  const dob = details?.dob || "—";
+  const sex = details?.sex || "X";
+  const today = new Date();
+  const expiry = new Date(today.getFullYear(), today.getMonth() + 6, today.getDate());
+  const fmt = (d: Date) => d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }).toUpperCase();
+
+  const ppNumber = useMemo(() => {
+    const src = (holder + (details?.email || "")).toUpperCase().replace(/[^A-Z0-9]/g, "");
+    let n = "";
+    for (let i = 0; i < 9; i++) n += src.charCodeAt(i % src.length).toString(36).toUpperCase().slice(-1);
+    return "Z" + n.slice(0, 8);
+  }, [holder, details?.email]);
+
+  const mrz1 = `P<AEZ${surname.toUpperCase().replace(/[^A-Z]/g, "")}<<${given.toUpperCase().replace(/\s/g, "<").replace(/[^A-Z<]/g, "")}`.padEnd(44, "<").slice(0, 44);
+  const mrz2 = `${ppNumber}<GBR${dob.replace(/\D/g, "").slice(-6)}${sex}${expiry.getFullYear().toString().slice(-2)}${String(expiry.getMonth() + 1).padStart(2, "0")}${String(expiry.getDate()).padStart(2, "0")}`.padEnd(44, "<").slice(0, 44);
+
   return (
     <div className="pp-reveal-wrap">
       <div className="pp-reveal-intro">
         <div className="pp-eyebrow" style={{ justifyContent: "center" }}><span className="pp-bullet" />Passport ready</div>
         <h1>Your <em>Rental Passport</em> is authenticated.</h1>
-        <p>We'll use it to score every London listing against your life.</p>
+        <p>We&apos;ll use it to score every London listing against your life — and you can share it with landlords in one tap.</p>
       </div>
-      <div className="pp-reveal-passport">
-        <div className="pp-rp-head">
-          <div><div className="pp-rp-title">{holder}</div><div className="pp-rp-subtitle">AEZ · RENTAL PASSPORT</div></div>
-          <div className="pp-stamp">VERIFIED</div>
+
+      <div className="pp-passport-book">
+        {/* Outer cover seal */}
+        <div className="pp-cover-stamp">
+          <div className="pp-cover-inner">
+            <div className="pp-coat">
+              <svg width="36" height="36" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="currentColor" strokeWidth="1" /><path d="M20 6 L22 14 L30 14 L24 19 L26 27 L20 23 L14 27 L16 19 L10 14 L18 14 Z" fill="currentColor" /></svg>
+            </div>
+            <div className="pp-cover-t1">AGENT ESTATE</div>
+            <div className="pp-cover-t2">Z</div>
+            <div className="pp-cover-t3">RENTAL PASSPORT</div>
+            <div className="pp-cover-t4">UNITED KINGDOM</div>
+          </div>
         </div>
-        <div className="pp-rp-grid">
-          {[
-            ["Persona", personaObj?.short || "—"],
-            ["Budget", budget ? budget + "/mo" : "—"],
-            ["Bedrooms", bedrooms || "—"],
-            ["Commute", commute || "—"],
-          ].map(([k, v]) => <div key={k} className="pp-rp-row"><span className="pp-rp-k">{k}</span><span className="pp-rp-v">{v}</span></div>)}
-        </div>
-        <div style={{ padding: "22px 32px 24px", background: "var(--pp-surface-2)", borderTop: "1px dashed var(--pp-line)" }}>
-          <div style={{ fontFamily: "var(--pp-mono)", fontSize: 11, color: "var(--pp-ink-4)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 12 }}>Priorities · weighted</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {priorities.map((p, i) => <span key={p} style={{ padding: "8px 14px", background: "var(--pp-surface)", border: "1px solid var(--pp-line)", borderRadius: 999, fontSize: 13, fontWeight: 500, display: "inline-flex", alignItems: "center", gap: 8 }}>{p} <span style={{ fontFamily: "var(--pp-mono)", fontSize: 10, color: "var(--pp-ink-4)", background: "var(--pp-surface-2)", padding: "2px 6px", borderRadius: 4 }}>#{i + 1}</span></span>)}
+
+        {/* Inside pages */}
+        <div className="pp-spread">
+          {/* LEFT PAGE — Photo + identity */}
+          <div className="pp-page left">
+            <div className="pp-watermark-full">Z</div>
+            <div className="pp-page-header">
+              <span>RENTAL PASSPORT · PASSEPORT DE LOCATION</span>
+              <span>UK / GBR</span>
+            </div>
+
+            <div className="pp-photo-row">
+              <div className="pp-photo">
+                <div className="pp-photo-inner">
+                  <Silhouette sex={sex} size={112} />
+                </div>
+                <div className="pp-photo-tag">PHOTO · AEZ-ID</div>
+              </div>
+              <div className="pp-personal">
+                <PpEntry k="Surname / Nom" v={surname.toUpperCase()} />
+                <PpEntry k="Given names / Prénoms" v={given.toUpperCase()} />
+                <PpEntry k="Nationality / Nationalité" v="BRITISH RESIDENT" />
+                <PpEntry k="Date of birth" v={dob} />
+                <PpEntry k="Sex" v={sex} />
+                <PpEntry k="Passport no." v={ppNumber} mono />
+              </div>
+            </div>
+
+            <div className="pp-dates">
+              <PpEntry k="Date of issue" v={fmt(today)} mono />
+              <PpEntry k="Date of expiry" v={fmt(expiry)} mono />
+              <PpEntry k="Authority" v="AGENT ESTATE Z" />
+            </div>
+
+            <div className="pp-mrz-block">
+              <div>{mrz1}</div>
+              <div>{mrz2}</div>
+            </div>
+          </div>
+
+          {/* RIGHT PAGE — Visa stamps + rental profile */}
+          <div className="pp-page right">
+            <div className="pp-page-header">
+              <span>RENTAL PROFILE · CRITÈRES</span>
+              <span>PAGE 02</span>
+            </div>
+
+            <div className="pp-visa-stamp">
+              <div className="pp-visa-inner">
+                <div className="pp-visa-top">LONDON · UK</div>
+                <div className="pp-visa-big">VERIFIED</div>
+                <div className="pp-visa-date">{fmt(today)}</div>
+                <div className="pp-visa-sub">Ready to view</div>
+              </div>
+            </div>
+
+            <div className="pp-round-stamp">
+              <div className="pp-round-inner">
+                <div className="pp-round-top">AEZ · AUTH</div>
+                <div className="pp-round-center">&#10003;</div>
+                <div className="pp-round-bottom">{today.getFullYear()}</div>
+              </div>
+            </div>
+
+            <div className="pp-profile">
+              <PpEntry k="Persona" v={personaObj?.short || "—"} />
+              <PpEntry k="Budget" v={budget ? budget + " / month" : "—"} mono />
+              <PpEntry k="Bedrooms" v={bedrooms || "—"} />
+              <PpEntry k="Commute" v={commute || "—"} />
+            </div>
+
+            <div className="pp-priorities-block">
+              <div className="pp-block-label">PRIORITY WEIGHTS · PRIORITÉS</div>
+              <div className="pp-priority-list">
+                {priorities.map((p, i) => (
+                  <div key={p} className="pp-priority-row">
+                    <span className="pp-priority-rank">{String(i + 1).padStart(2, "0")}</span>
+                    <span className="pp-priority-name">{p}</span>
+                    <span className="pp-priority-bar">
+                      <span className="pp-priority-fill" style={{ width: WEIGHT_WIDTHS[priorityWeights[p] || "Nice to have"], background: WEIGHT_COLORS[priorityWeights[p] || "Nice to have"] }} />
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pp-signature">
+              <div className="pp-sig-line">
+                <span className="pp-sig-script">{holder}</span>
+              </div>
+              <div className="pp-sig-caption">Holder&apos;s signature · Signature du titulaire</div>
+            </div>
           </div>
         </div>
       </div>
+
+      <div className="pp-cta-bar">
+        <button className="pp-big-cta" onClick={onFindHome} disabled={submitting}>
+          {submitting ? "Searching London..." : "Find my home"} <ArrowIcon />
+        </button>
+        <button className="pp-ghost-cta" onClick={onRestart}>Edit details</button>
+        <button className="pp-ghost-cta">Share with landlord</button>
+      </div>
+
       <div className="pp-meta-strip">
         <span>END-TO-END ENCRYPTED</span><span className="pp-sep" /><span>SHAREABLE WITH LANDLORDS</span><span className="pp-sep" /><span>RIGHT-TO-RENT COMPATIBLE</span>
       </div>
@@ -487,6 +703,7 @@ export default function OnboardPage() {
   const [bedrooms, setBedrooms] = useState<string | null>(null);
   const [commute, setCommute] = useState<string | null>(null);
   const [priorities, setPriorities] = useState<string[]>([]);
+  const [priorityWeights, setPriorityWeights] = useState<Record<string, string>>({});
   const [lastFilled, setLastFilled] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -506,11 +723,25 @@ export default function OnboardPage() {
 
   const togglePriority = (p: string) => {
     setPriorities(prev => {
-      if (prev.includes(p)) return prev.filter(x => x !== p);
-      if (prev.length >= 3) return prev;
+      if (prev.includes(p)) {
+        const next = prev.filter(x => x !== p);
+        setPriorityWeights(w => { const c = { ...w }; delete c[p]; return c; });
+        return next;
+      }
+      if (prev.length >= 6) return prev;
       flash("priorities");
       return [...prev, p];
     });
+  };
+
+  const addCustomPriority = (p: string) => {
+    if (priorities.includes(p) || priorities.length >= 6) return;
+    flash("priorities");
+    setPriorities(prev => [...prev, p]);
+  };
+
+  const setWeight = (p: string, w: string) => {
+    setPriorityWeights(prev => ({ ...prev, [p]: w }));
   };
 
   const detailsValid = () => {
@@ -526,25 +757,24 @@ export default function OnboardPage() {
     if (step === 3) return !!bedrooms;
     if (step === 4) return !!commute;
     if (step === 5) return priorities.length >= 1;
+    if (step === 6) return true;
+    if (step === 7) return priorities.every(p => priorityWeights[p]);
     return false;
   };
 
-  const next = () => setStep(s => Math.min(7, s + 1));
+  const next = () => setStep(s => Math.min(9, s + 1));
   const back = () => setStep(s => Math.max(0, s - 1));
 
-  // Parse budget string to number
   const parseBudget = (b: string): number => {
     const num = parseInt(b.replace(/[£,]/g, "").replace(/\/mo.*/, ""), 10);
     return isNaN(num) ? 2000 : num;
   };
-  // Parse bedrooms string to number
   const parseBedrooms = (b: string): number => {
     if (b === "Studio") return 0;
     const num = parseInt(b, 10);
     return isNaN(num) ? 4 : num;
   };
 
-  // After reveal (step 7), call API and redirect
   const handleFindHome = async () => {
     setSubmitting(true);
     setError("");
@@ -556,6 +786,7 @@ export default function OnboardPage() {
         bedrooms_min: parseBedrooms(bedrooms || "1 bed"),
         commute_destination: commute || "London Bridge",
         priorities,
+        priority_weights: priorityWeights,
       });
       router.push(`/results?session=${result.session_id}`);
     } catch (err: any) {
@@ -564,15 +795,29 @@ export default function OnboardPage() {
     }
   };
 
-  // Auto-advance from loading (step 6) to reveal (step 7)
+  // Auto-advance from loading (step 8) to reveal (step 9)
   useEffect(() => {
-    if (step === 6) {
-      const t = setTimeout(() => setStep(7), 6200);
+    if (step === 8) {
+      const t = setTimeout(() => setStep(9), 6200);
       return () => clearTimeout(t);
     }
   }, [step]);
 
-  const stepLabels = ["Details", "Persona", "Budget", "Bedrooms", "Commute", "Priorities", "Authenticating", "Passport"];
+  // Set default weights when entering weightage step
+  useEffect(() => {
+    if (step === 7) {
+      setPriorityWeights(prev => {
+        const updated = { ...prev };
+        priorities.forEach((p, i) => {
+          if (!updated[p]) updated[p] = i === 0 ? "Critical" : i === 1 ? "Important" : "Nice to have";
+        });
+        return updated;
+      });
+    }
+  }, [step, priorities]);
+
+  const stepLabels = ["Details", "Persona", "Budget", "Bedrooms", "Commute", "Priorities", "Review", "Weightage", "Authenticating", "Passport"];
+  const totalSteps = 10;
 
   return (
     <div className="pp-app">
@@ -588,10 +833,10 @@ export default function OnboardPage() {
         </div>
 
         <div className="pp-progress-wrap">
-          <div className="pp-progress-label">Step {Math.min(step + 1, 8).toString().padStart(2, "0")} / 08 · {stepLabels[step]}</div>
-          <div className="pp-progress-track"><div className="pp-progress-fill" style={{ width: step >= 7 ? "100%" : `${(step / 7) * 100}%` }} /></div>
+          <div className="pp-progress-label">Step {Math.min(step + 1, totalSteps).toString().padStart(2, "0")} / {totalSteps.toString().padStart(2, "0")} · {stepLabels[step]}</div>
+          <div className="pp-progress-track"><div className="pp-progress-fill" style={{ width: step >= totalSteps - 1 ? "100%" : `${(step / (totalSteps - 1)) * 100}%` }} /></div>
           <div className="pp-progress-dots">
-            {Array.from({ length: 8 }).map((_, i) => <div key={i} className={"pp-dot " + (i === step ? "active" : i < step ? "done" : "")} />)}
+            {Array.from({ length: totalSteps }).map((_, i) => <div key={i} className={"pp-dot " + (i === step ? "active" : i < step ? "done" : "")} />)}
           </div>
         </div>
 
@@ -603,27 +848,21 @@ export default function OnboardPage() {
               {step === 2 && <BudgetStep personaObj={personaObj} budget={budget} onPick={v => onPick("budget", v)} />}
               {step === 3 && <BedroomsStep budget={budget} bedrooms={bedrooms} onPick={v => onPick("bedrooms", v)} />}
               {step === 4 && <CommuteStep commute={commute} onPick={v => onPick("commute", v)} />}
-              {step === 5 && <PrioritiesStep personaObj={personaObj} priorities={priorities} toggle={togglePriority} />}
+              {step === 5 && <PrioritiesStep personaObj={personaObj} priorities={priorities} toggle={togglePriority} onAddCustom={addCustomPriority} />}
               <ContextNote step={step} />
             </div>
           )}
-          {step === 6 && <LoadingView details={details} personaObj={personaObj} budget={budget} bedrooms={bedrooms} onSkip={() => setStep(7)} />}
-          {step === 7 && <RevealView details={details} personaObj={personaObj} budget={budget} bedrooms={bedrooms} commute={commute} priorities={priorities} />}
+          {step === 6 && <div key={step} className="pp-fade-swap"><ReviewStep details={details} personaObj={personaObj} budget={budget} bedrooms={bedrooms} commute={commute} priorities={priorities} /></div>}
+          {step === 7 && <div key={step} className="pp-fade-swap"><WeightageStep priorities={priorities} weights={priorityWeights} setWeight={setWeight} /></div>}
+          {step === 8 && <LoadingView details={details} personaObj={personaObj} budget={budget} bedrooms={bedrooms} onSkip={() => setStep(9)} />}
+          {step === 9 && <RevealView details={details} personaObj={personaObj} budget={budget} bedrooms={bedrooms} commute={commute} priorities={priorities} priorityWeights={priorityWeights} onFindHome={handleFindHome} submitting={submitting} onRestart={() => { setStep(1); setPersona(null); setBudget(null); setBedrooms(null); setCommute(null); setPriorities([]); setPriorityWeights({}); }} />}
 
-          {step < 6 && (
+          {step < 8 && (
             <div className="pp-nav-row">
               <button className="pp-back-btn" onClick={back} disabled={step === 0} style={{ visibility: step === 0 ? "hidden" : "visible" }}><BackIcon /> Back</button>
-              <button className={"pp-next-btn" + (step === 5 ? " primary-cta" : "")} onClick={next} disabled={!canAdvance()}>
-                {step === 5 ? "Build my passport" : step === 0 ? "Get started" : "Continue"} <ArrowIcon />
+              <button className={"pp-next-btn" + (step === 7 ? " primary-cta" : "")} onClick={next} disabled={!canAdvance()}>
+                {step === 5 ? "Review choices" : step === 7 ? "Build my passport" : step === 0 ? "Get started" : "Continue"} <ArrowIcon />
               </button>
-            </div>
-          )}
-          {step === 7 && (
-            <div className="pp-rp-cta-row" style={{ marginTop: 28 }}>
-              <button className="pp-big-cta" onClick={handleFindHome} disabled={submitting}>
-                {submitting ? "Searching London..." : "Find my home"} <ArrowIcon />
-              </button>
-              <button className="pp-ghost-cta" onClick={() => { setStep(1); setPersona(null); setBudget(null); setBedrooms(null); setCommute(null); setPriorities([]); }}>Edit details</button>
             </div>
           )}
           {error && <div style={{ color: "var(--pp-danger)", marginTop: 12, textAlign: "center" }}>{error}</div>}
