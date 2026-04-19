@@ -779,41 +779,7 @@ export default function OnboardPage() {
 
   const handleFindHome = async () => {
     setSubmitting(true);
-    setError("");
-    try {
-      const result = await createPassport({
-        session_id: sessionId.current,
-        persona: persona || "professional",
-        budget_max: parseBudget(budget || "£2,000"),
-        bedrooms_min: parseBedrooms(bedrooms || "1 bed"),
-        commute_destination: commute || "London Bridge",
-        priorities,
-        priority_weights: priorityWeights,
-      });
-      // Save passport + results to Supabase (non-blocking)
-      if (user?.id) {
-        savePassportToSupabase({
-          user_id: user.id,
-          session_id: sessionId.current,
-          name: details.name,
-          email: details.email,
-          phone: details.phone,
-          dob: details.dob,
-          sex: details.sex,
-          persona: persona || "professional",
-          budget_max: parseBudget(budget || "£2,000"),
-          bedrooms_min: parseBedrooms(bedrooms || "1 bed"),
-          commute_destination: commute || "London Bridge",
-          priorities,
-          priority_weights: priorityWeights,
-        }).catch(() => {});
-        saveResultsToSupabase(sessionId.current, result.top_picks).catch(() => {});
-      }
-      router.push(`/results?session=${result.session_id}`);
-    } catch (err: any) {
-      setError(err.message || "Something went wrong. Please try again.");
-      setSubmitting(false);
-    }
+    router.push("/results");
   };
 
   // Auto-advance from loading (step 8) to reveal (step 9)
