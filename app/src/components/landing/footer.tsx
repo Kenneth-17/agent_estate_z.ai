@@ -5,9 +5,6 @@ export default function Footer() {
         <div className="footer-brand">
           <div className="nav-mark">Z</div>
           <span>Agent Estate Z</span>
-          <span className="footer-tag">
-            &middot; Built for Hackathon Track 3 &middot; The Invisible Tube
-          </span>
         </div>
         <div className="footer-links">
           <a href="#problem">Problem</a>
