@@ -151,11 +151,13 @@ function ResultsContent() {
               onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--pp-shadow)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "var(--pp-shadow-sm)"; }}
             >
-              {/* Image placeholder */}
-              <div style={{ height: 180, background: "var(--pp-surface-2)", position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <div style={{ fontSize: 13, color: "var(--pp-ink-4)" }}>
-                  {prop.listing_title}
-                </div>
+              {/* Image */}
+              <div style={{ height: 180, background: "var(--pp-surface-2)", position: "relative", overflow: "hidden" }}>
+                {prop.images_script ? (
+                  <img src={prop.images_script.split("\n")[0]} alt={prop.location} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
+                ) : (
+                  <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "var(--pp-ink-4)", fontSize: 13 }}>No image</div>
+                )}
                 <div style={{ position: "absolute", top: 14, right: 14, padding: "6px 12px", borderRadius: 999, fontSize: 13, fontWeight: 600, color: getScoreColor(prop.overall_score || 0), background: getScoreBg(prop.overall_score || 0) }}>
                   {prop.overall_score}% match
                 </div>
